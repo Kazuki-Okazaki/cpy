@@ -22,12 +22,14 @@
             height: 160px;
             border: 2px solid black;
             display: flex;
+            flex-direction: column; /* デフォルトで縦積みに */
             align-items: center;
             justify-content: center;
             position: relative;
         }
         .hand {
             display: flex;
+            flex-direction: row; /* 手札のみ横並び */
             gap: 10px;
             padding: 10px;
             border: 2px dashed blue;
@@ -55,22 +57,22 @@
     <!-- 上段 -->
     <div class="game-board">
         <div class="area" id="evolve">エボルヴデッキ</div>
-        <div class="area" id="field1">フィールド①</div>
-        <div class="area" id="field2">フィールド②</div>
-        <div class="area" id="field3">フィールド③</div>
-        <div class="area" id="field4">フィールド④</div>
-        <div class="area" id="field5">フィールド⑤</div>
+        <div class="area field" id="field1">フィールド①</div>
+        <div class="area field" id="field2">フィールド②</div>
+        <div class="area field" id="field3">フィールド③</div>
+        <div class="area field" id="field4">フィールド④</div>
+        <div class="area field" id="field5">フィールド⑤</div>
         <div class="area" id="deck">デッキ</div>
     </div>
 
     <!-- 中段 -->
     <div class="game-board">
         <div class="area" id="exile">消滅領域</div>
-        <div class="area" id="ex1">EX①</div>
-        <div class="area" id="ex2">EX②</div>
-        <div class="area" id="ex3">EX③</div>
-        <div class="area" id="ex4">EX④</div>
-        <div class="area" id="ex5">EX⑤</div>
+        <div class="area field" id="ex1">EX①</div>
+        <div class="area field" id="ex2">EX②</div>
+        <div class="area field" id="ex3">EX③</div>
+        <div class="area field" id="ex4">EX④</div>
+        <div class="area field" id="ex5">EX⑤</div>
         <div class="area" id="graveyard">墓場</div>
     </div>
 
@@ -99,14 +101,14 @@
                     const cardId = e.dataTransfer.getData("text/plain");
                     const card = document.getElementById(cardId);
 
-                    // 手札の場合は横並びに追加
+                    // 手札なら横並びで追加
                     if (area.id === "hand") {
                         area.appendChild(card);
                         return;
                     }
 
-                    // すでにカードが1枚ある場合、上 or 下を選べる処理
-                    if (area.childNodes.length > 1) {
+                    // フィールド・EXエリアのみ「上/下の選択」を実行
+                    if (area.classList.contains("field") && area.childNodes.length > 1) {
                         const position = confirm("上に置きますか？（OK:上 / キャンセル:下）");
                         if (position) {
                             area.insertBefore(card, area.firstChild);
