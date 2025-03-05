@@ -21,15 +21,11 @@
             width: 120px;
             height: 160px;
             border: 2px solid black;
-            display: flex;
-            flex-direction: column; /* デフォルトで縦積みに */
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            position: relative; /* カードを重ねるためにrelativeに */
         }
         .hand {
             display: flex;
-            flex-direction: row; /* 手札のみ横並び */
+            flex-direction: row;
             gap: 10px;
             padding: 10px;
             border: 2px dashed blue;
@@ -46,6 +42,7 @@
             align-items: center;
             justify-content: center;
             cursor: grab;
+            position: absolute; /* カードを重ねる */
         }
         .drag-over {
             background-color: rgba(0, 255, 0, 0.2);
@@ -107,8 +104,20 @@
                         return;
                     }
 
+                    // フィールド・EXエリアは2枚まで
+                    if (area.classList.contains("field") && area.children.length >= 2) {
+                        alert("フィールド・EXエリアには2枚までしか置けません");
+                        return;
+                    }
+
+                    // カードをエリア内に重ねて配置
+                    card.style.position = "absolute";
+                    card.style.left = "0";
+                    card.style.top = "0";
+                    card.style.zIndex = area.children.length; // 新しいカードが上に来る
+
                     // フィールド・EXエリアのみ「上/下の選択」を実行
-                    if (area.classList.contains("field") && area.childNodes.length > 1) {
+                    if (area.classList.contains("field") && area.children.length === 2) {
                         const position = confirm("上に置きますか？（OK:上 / キャンセル:下）");
                         if (position) {
                             area.insertBefore(card, area.firstChild);
