@@ -13,13 +13,13 @@
         }
         .game-board {
             display: grid;
-            grid-template-columns: repeat(7, 100px);
+            grid-template-columns: repeat(7, 120px);
             gap: 10px;
             margin-bottom: 20px;
         }
         .area, .hand {
-            width: 100px;
-            height: 150px;
+            width: 120px;
+            height: 160px;
             border: 2px solid black;
             display: flex;
             align-items: center;
@@ -27,8 +27,8 @@
             position: relative;
         }
         .hand {
-            width: 720px;
-            height: 150px;
+            width: 800px;
+            height: 160px;
             border: 2px dashed blue;
             display: flex;
             justify-content: center;
@@ -37,17 +37,31 @@
             background-color: lightblue;
         }
         .card {
-            width: 80px;
-            height: 120px;
+            width: 100px;
+            height: 140px;
             background-color: lightgray;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: grab;
+            position: absolute;
+        }
+        .drag-over {
+            background-color: rgba(0, 255, 0, 0.2);
         }
     </style>
 </head>
 <body>
+
+    <div class="game-board">
+        <div class="area" id="exile">消滅領域</div>
+        <div class="area" id="ex1">EX①</div>
+        <div class="area" id="ex2">EX②</div>
+        <div class="area" id="ex3">EX③</div>
+        <div class="area" id="ex4">EX④</div>
+        <div class="area" id="ex5">EX⑤</div>
+        <div class="area" id="graveyard">墓場</div>
+    </div>
 
     <div class="game-board">
         <div class="area" id="deck">デッキ</div>
@@ -56,7 +70,7 @@
         <div class="area" id="field3">フィールド③</div>
         <div class="area" id="field4">フィールド④</div>
         <div class="area" id="field5">フィールド⑤</div>
-        <div class="area" id="graveyard">墓場</div>
+        <div class="area" id="evolve">エボルヴデッキ</div>
     </div>
 
     <div class="hand" id="hand">手札</div>
@@ -65,18 +79,35 @@
         document.addEventListener("DOMContentLoaded", () => {
             const areas = document.querySelectorAll(".area, .hand");
 
+            // ドラッグ＆ドロップイベントの設定
             areas.forEach(area => {
                 area.addEventListener("dragover", (e) => {
                     e.preventDefault();
+                    area.classList.add("drag-over");
+                });
+
+                area.addEventListener("dragleave", () => {
+                    area.classList.remove("drag-over");
                 });
 
                 area.addEventListener("drop", (e) => {
                     e.preventDefault();
+                    area.classList.remove("drag-over");
+
                     const cardId = e.dataTransfer.getData("text/plain");
                     const card = document.getElementById(cardId);
                     
-                    // ドロップ先のエリアにカードを追加
-                    area.appendChild(card);
+                    // すでにカードが1枚ある場合、上 or 下を選べる処理
+                    if (area.childNodes.length > 1) {
+                        const position = confirm("上に置きますか？（OK:上 / キャンセル:下）");
+                        if (position) {
+                            area.insertBefore(card, area.firstChild);
+                        } else {
+                            area.appendChild(card);
+                        }
+                    } else {
+                        area.appendChild(card);
+                    }
                 });
             });
 
