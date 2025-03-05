@@ -3,157 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カードゲーム</title>
+    <title>カードゲーム盤面</title>
     <style>
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
         }
         .game-board {
-            display: grid;
-            grid-template-columns: repeat(7, 120px);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .area {
-            width: 120px;
-            height: 160px;
-            border: 2px solid black;
-            position: relative; /* カードを重ねるためにrelativeに */
-        }
-        .hand {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .field-row {
+            display: flex;
             gap: 10px;
-            padding: 10px;
-            border: 2px dashed blue;
-            background-color: lightblue;
-            min-height: 160px;
-            max-width: 860px;
-            overflow-x: auto;
+        }
+        .zone {
+            width: 100px;
+            height: 140px;
+            border: 1px solid black;
+            display: flex;
+            position: relative;
         }
         .card {
             width: 100px;
             height: 140px;
-            background-color: lightgray;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute;
             cursor: grab;
-            position: absolute; /* フィールド・EXエリアで重ねるために absolute に */
         }
-        .hand .card {
-            position: static; /* 手札のカードは横並び */
-        }
-        .drag-over {
-            background-color: rgba(0, 255, 0, 0.2);
+        .hand-zone {
+            display: flex;
+            gap: 5px;
+            min-height: 140px;
         }
     </style>
 </head>
 <body>
-
-    <!-- 上段 -->
     <div class="game-board">
-        <div class="area" id="evolve">エボルヴデッキ</div>
-        <div class="area field" id="field1">フィールド①</div>
-        <div class="area field" id="field2">フィールド②</div>
-        <div class="area field" id="field3">フィールド③</div>
-        <div class="area field" id="field4">フィールド④</div>
-        <div class="area field" id="field5">フィールド⑤</div>
-        <div class="area" id="deck">デッキ</div>
+        <div class="field-row">
+            <div class="zone" id="evolveDeck">Evoデッキ</div>
+            <div class="zone" id="field1">F1</div>
+            <div class="zone" id="field2">F2</div>
+            <div class="zone" id="field3">F3</div>
+            <div class="zone" id="field4">F4</div>
+            <div class="zone" id="field5">F5</div>
+            <div class="zone" id="mainDeck">メインデッキ</div>
+        </div>
+        <div class="field-row">
+            <div class="zone" id="banish">消滅領域</div>
+            <div class="zone" id="ex1">EX1</div>
+            <div class="zone" id="ex2">EX2</div>
+            <div class="zone" id="ex3">EX3</div>
+            <div class="zone" id="ex4">EX4</div>
+            <div class="zone" id="ex5">EX5</div>
+            <div class="zone" id="graveyard">墓地</div>
+        </div>
+        <div class="hand-zone" id="hand">手札</div>
     </div>
-
-    <!-- 中段 -->
-    <div class="game-board">
-        <div class="area" id="exile">消滅領域</div>
-        <div class="area field" id="ex1">EX①</div>
-        <div class="area field" id="ex2">EX②</div>
-        <div class="area field" id="ex3">EX③</div>
-        <div class="area field" id="ex4">EX④</div>
-        <div class="area field" id="ex5">EX⑤</div>
-        <div class="area" id="graveyard">墓場</div>
-    </div>
-
-    <!-- 下段（手札） -->
-    <div class="hand" id="hand"></div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const areas = document.querySelectorAll(".area, .hand");
+        let draggedCard = null;
 
-            areas.forEach(area => {
-                area.addEventListener("dragover", (e) => {
-                    e.preventDefault();
-                    area.classList.add("drag-over");
-                });
+        function createCard() {
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.textContent = "カード";
+            card.draggable = true;
+            card.addEventListener("dragstart", (e) => {
+                draggedCard = card;
+            });
+            return card;
+        }
 
-                area.addEventListener("dragleave", () => {
-                    area.classList.remove("drag-over");
-                });
+        document.getElementById("mainDeck").addEventListener("click", () => {
+            document.getElementById("hand").appendChild(createCard());
+        });
 
-                area.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    area.classList.remove("drag-over");
-
-                    const cardId = e.dataTransfer.getData("text/plain");
-                    const card = document.getElementById(cardId);
-
-                    // 手札なら横並びのまま追加
-                    if (area.id === "hand") {
-                        area.appendChild(card);
-                        return;
-                    }
-
-                    // フィールド・EXエリアは2枚まで
-                    if (area.classList.contains("field") && area.children.length >= 2) {
-                        alert("フィールド・EXエリアには2枚までしか置けません");
-                        return;
-                    }
-
-                    // カードをエリア内に重ねて配置
-                    card.style.position = "absolute";
-                    card.style.left = "0";
-                    card.style.zIndex = area.children.length;
-
-                    if (area.classList.contains("field") && area.children.length === 2) {
-                        const position = confirm("上に置きますか？（OK:上 / キャンセル:下）");
-                        if (position) {
-                            area.insertBefore(card, area.firstChild);
-                            card.style.top = "0px"; // 上のカードはそのまま
-                        } else {
-                            area.appendChild(card);
-                            card.style.top = "20px"; // 下のカードを少しズラす
-                        }
-                    } else {
-                        area.appendChild(card);
-                        card.style.top = "0px";
-                    }
-                });
+        document.querySelectorAll(".zone, .hand-zone").forEach(zone => {
+            zone.addEventListener("dragover", (e) => {
+                e.preventDefault();
             });
 
-            function createCard(id) {
-                const card = document.createElement("div");
-                card.classList.add("card");
-                card.textContent = `カード${id}`;
-                card.setAttribute("id", `card-${id}`);
-                card.setAttribute("draggable", true);
-
-                card.addEventListener("dragstart", (e) => {
-                    e.dataTransfer.setData("text/plain", card.id);
-                });
-
-                return card;
-            }
-
-            // デッキにカードを配置
-            const deck = document.getElementById("deck");
-            for (let i = 1; i <= 5; i++) {
-                deck.appendChild(createCard(i));
-            }
+            zone.addEventListener("drop", (e) => {
+                if (!draggedCard) return;
+                if (zone.classList.contains("zone")) {
+                    const cards = zone.querySelectorAll(".card");
+                    if (cards.length === 1) {
+                        const choice = confirm("上に重ねますか？ キャンセルで下に配置");
+                        if (choice) {
+                            zone.appendChild(draggedCard);
+                        } else {
+                            cards[0].style.transform = "translateY(20px)";
+                            zone.appendChild(draggedCard);
+                        }
+                    } else if (cards.length < 2) {
+                        zone.appendChild(draggedCard);
+                    }
+                } else {
+                    zone.appendChild(draggedCard);
+                }
+                draggedCard = null;
+            });
         });
     </script>
-
 </body>
 </html>
