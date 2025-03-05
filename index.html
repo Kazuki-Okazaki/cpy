@@ -18,12 +18,33 @@
         .dragging {
             opacity: 0.5;
         }
+        .dropzone {
+            width: 120px;
+            height: 160px;
+            border: 2px dashed gray;
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+            line-height: 160px;
+            vertical-align: top;
+        }
+        .dropzone.highlight {
+            border-color: blue;
+        }
     </style>
 </head>
 <body>
     <div id="field">
         <div class="card" draggable="true" data-id="1">カード1</div>
         <div class="card" draggable="true" data-id="2">カード2</div>
+    </div>
+
+    <div id="drop-areas">
+        <div class="dropzone" id="hand">手札</div>
+        <div class="dropzone" id="field">フィールド</div>
+        <div class="dropzone" id="ex-area">EXエリア</div>
+        <div class="dropzone" id="graveyard">墓場</div>
+        <div class="dropzone" id="banish">消滅領域</div>
     </div>
 
     <script>
@@ -35,6 +56,29 @@
 
             card.addEventListener('dragend', (event) => {
                 card.classList.remove('dragging');
+            });
+        });
+
+        document.querySelectorAll('.dropzone').forEach(zone => {
+            zone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                zone.classList.add('highlight');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('highlight');
+            });
+
+            zone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                zone.classList.remove('highlight');
+
+                let cardId = event.dataTransfer.getData('text/plain');
+                let card = document.querySelector(`.card[data-id="${cardId}"]`);
+
+                if (card) {
+                    zone.appendChild(card);
+                }
             });
         });
     </script>
