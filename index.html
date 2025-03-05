@@ -37,17 +37,7 @@
         }
         .card.bottom {
             z-index: 1;
-            top: 20px; /* 少しずらして配置 */
-        }
-        .counter {
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            padding: 2px 5px;
-            border: 1px solid black;
-            font-size: 14px;
+            top: 20px;
         }
     </style>
 </head>
@@ -90,7 +80,15 @@
 
             if (existingCards.length === 1) {
                 let choice = confirm("上に配置しますか？（キャンセルで下に配置）");
-                cardElement.classList.add(choice ? "top" : "bottom");
+                if (choice) {
+                    // 上に配置 → 既存のカードを下にずらす
+                    existingCards[0].classList.remove("top");
+                    existingCards[0].classList.add("bottom");
+                    cardElement.classList.add("top");
+                } else {
+                    // 下に配置
+                    cardElement.classList.add("bottom");
+                }
             } else {
                 cardElement.classList.add("top");
             }
