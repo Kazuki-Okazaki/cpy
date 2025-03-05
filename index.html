@@ -17,7 +17,7 @@
             gap: 10px;
             margin-bottom: 20px;
         }
-        .area, .hand {
+        .area {
             width: 120px;
             height: 160px;
             border: 2px solid black;
@@ -27,14 +27,14 @@
             position: relative;
         }
         .hand {
-            width: 800px;
-            height: 160px;
-            border: 2px dashed blue;
             display: flex;
-            justify-content: center;
             gap: 10px;
-            margin-top: 20px;
+            padding: 10px;
+            border: 2px dashed blue;
             background-color: lightblue;
+            min-height: 160px;
+            max-width: 860px;
+            overflow-x: auto;
         }
         .card {
             width: 100px;
@@ -44,7 +44,6 @@
             align-items: center;
             justify-content: center;
             cursor: grab;
-            position: absolute;
         }
         .drag-over {
             background-color: rgba(0, 255, 0, 0.2);
@@ -53,6 +52,18 @@
 </head>
 <body>
 
+    <!-- 上段 -->
+    <div class="game-board">
+        <div class="area" id="evolve">エボルヴデッキ</div>
+        <div class="area" id="field1">フィールド①</div>
+        <div class="area" id="field2">フィールド②</div>
+        <div class="area" id="field3">フィールド③</div>
+        <div class="area" id="field4">フィールド④</div>
+        <div class="area" id="field5">フィールド⑤</div>
+        <div class="area" id="deck">デッキ</div>
+    </div>
+
+    <!-- 中段 -->
     <div class="game-board">
         <div class="area" id="exile">消滅領域</div>
         <div class="area" id="ex1">EX①</div>
@@ -63,17 +74,8 @@
         <div class="area" id="graveyard">墓場</div>
     </div>
 
-    <div class="game-board">
-        <div class="area" id="deck">デッキ</div>
-        <div class="area" id="field1">フィールド①</div>
-        <div class="area" id="field2">フィールド②</div>
-        <div class="area" id="field3">フィールド③</div>
-        <div class="area" id="field4">フィールド④</div>
-        <div class="area" id="field5">フィールド⑤</div>
-        <div class="area" id="evolve">エボルヴデッキ</div>
-    </div>
-
-    <div class="hand" id="hand">手札</div>
+    <!-- 下段（手札） -->
+    <div class="hand" id="hand"></div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -96,7 +98,13 @@
 
                     const cardId = e.dataTransfer.getData("text/plain");
                     const card = document.getElementById(cardId);
-                    
+
+                    // 手札の場合は横並びに追加
+                    if (area.id === "hand") {
+                        area.appendChild(card);
+                        return;
+                    }
+
                     // すでにカードが1枚ある場合、上 or 下を選べる処理
                     if (area.childNodes.length > 1) {
                         const position = confirm("上に置きますか？（OK:上 / キャンセル:下）");
