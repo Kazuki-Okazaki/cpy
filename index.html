@@ -3,88 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カードドラッグ＆ドロップ</title>
+    <title>カード配置システム</title>
     <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .field {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .slot {
+            width: 100px;
+            height: 140px;
+            border: 2px solid black;
+            background-color: white;
+            position: relative;
+        }
         .card {
             width: 100px;
             height: 140px;
-            border: 1px solid black;
+            position: absolute;
+            cursor: grab;
+        }
+        .card.top {
+            z-index: 2;
+            top: 0;
+        }
+        .card.bottom {
+            z-index: 1;
+            top: 20px; /* 少しずらして配置 */
+        }
+        .counter {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: white;
-            text-align: center;
-            line-height: 140px;
-            font-weight: bold;
-            user-select: none;
-            position: relative;
-        }
-        .dragging {
-            opacity: 0.5;
-        }
-        .dropzone {
-            width: 120px;
-            height: 160px;
-            border: 2px dashed gray;
-            display: flex; /* カードを内部で管理しやすくする */
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .dropzone.highlight {
-            border-color: blue;
+            padding: 2px 5px;
+            border: 1px solid black;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div id="field">
-        <div class="card" draggable="true" data-id="1">カード1</div>
-        <div class="card" draggable="true" data-id="2">カード2</div>
+
+    <div class="field">
+        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
     </div>
 
-    <div id="drop-areas">
-        <div class="dropzone" id="hand">手札</div>
-        <div class="dropzone" id="field">フィールド</div>
-        <div class="dropzone" id="ex-area">EXエリア</div>
-        <div class="dropzone" id="graveyard">墓場</div>
-        <div class="dropzone" id="banish">消滅領域</div>
+    <div>
+        <img src="card.png" class="card" draggable="true" ondragstart="drag(event)">
     </div>
 
     <script>
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('dragstart', (event) => {
-                event.dataTransfer.setData('text/plain', card.dataset.id);
-                card.classList.add('dragging');
-            });
+        function allowDrop(event) {
+            event.preventDefault();
+        }
 
-            card.addEventListener('dragend', () => {
-                card.classList.remove('dragging');
-            });
-        });
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.outerHTML);
+        }
 
-        document.querySelectorAll('.dropzone').forEach(zone => {
-            zone.addEventListener('dragover', (event) => {
-                event.preventDefault();
-                zone.classList.add('highlight');
-            });
+        function drop(event) {
+            event.preventDefault();
+            let slot = event.target.closest('.slot');
+            let existingCards = slot.querySelectorAll('.card');
 
-            zone.addEventListener('dragleave', () => {
-                zone.classList.remove('highlight');
-            });
+            if (existingCards.length >= 2) {
+                alert("このスロットには2枚までしか配置できません。");
+                return;
+            }
 
-            zone.addEventListener('drop', (event) => {
-                event.preventDefault();
-                zone.classList.remove('highlight');
+            let newCard = document.createElement("div");
+            newCard.innerHTML = event.dataTransfer.getData("text");
+            let cardElement = newCard.firstChild;
+            cardElement.classList.add(existingCards.length === 0 ? "top" : "bottom");
 
-                let cardId = event.dataTransfer.getData('text/plain');
-                let card = document.querySelector(`.card[data-id="${cardId}"]`);
-
-                if (card) {
-                    zone.appendChild(card);  // 正しくエリア内に配置
-                    card.style.position = "absolute";  // 位置を維持
-                    card.style.left = "50%";
-                    card.style.top = "50%";
-                    card.style.transform = "translate(-50%, -50%)"; // 中央揃え
-                }
-            });
-        });
+            slot.appendChild(cardElement);
+        }
     </script>
+
 </body>
 </html>
