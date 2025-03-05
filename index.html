@@ -3,98 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カード配置システム</title>
+    <title>カードゲーム</title>
     <style>
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            justify-content: center;
         }
-        .field {
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(7, 100px);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .area {
+            width: 100px;
+            height: 150px;
+            border: 2px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .hand {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin-top: 20px;
         }
-        .slot {
-            width: 100px;
-            height: 140px;
-            border: 2px solid black;
-            background-color: white;
-            position: relative;
-        }
         .card {
-            width: 100px;
-            height: 140px;
-            position: absolute;
+            width: 80px;
+            height: 120px;
+            background-color: lightgray;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: grab;
-        }
-        .card.top {
-            z-index: 2;
-            top: 0;
-        }
-        .card.bottom {
-            z-index: 1;
-            top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div class="field">
-        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-        <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div class="game-board">
+        <div class="area" id="deck">デッキ</div>
+        <div class="area" id="field1">フィールド①</div>
+        <div class="area" id="field2">フィールド②</div>
+        <div class="area" id="field3">フィールド③</div>
+        <div class="area" id="field4">フィールド④</div>
+        <div class="area" id="field5">フィールド⑤</div>
+        <div class="area" id="graveyard">墓場</div>
     </div>
 
-    <div>
-        <img src="card.png" class="card" draggable="true" ondragstart="drag(event)">
+    <div class="hand" id="hand">
+        <!-- 手札にカードが追加される -->
     </div>
 
     <script>
-        function allowDrop(event) {
-            event.preventDefault();
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const areas = document.querySelectorAll(".area");
+            const hand = document.getElementById("hand");
 
-        function drag(event) {
-            event.dataTransfer.setData("text", event.target.outerHTML);
-        }
+            areas.forEach(area => {
+                area.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                });
 
-        function drop(event) {
-            event.preventDefault();
-            let slot = event.target.closest('.slot');
-            let existingCards = slot.querySelectorAll('.card');
+                area.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    const cardId = e.dataTransfer.getData("text/plain");
+                    const card = document.getElementById(cardId);
+                    hand.appendChild(card);
+                });
+            });
 
-            if (existingCards.length >= 2) {
-                alert("このスロットには2枚までしか配置できません。");
-                return;
+            function createCard(id) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.textContent = `カード${id}`;
+                card.setAttribute("id", `card-${id}`);
+                card.setAttribute("draggable", true);
+
+                card.addEventListener("dragstart", (e) => {
+                    e.dataTransfer.setData("text/plain", card.id);
+                });
+
+                return card;
             }
 
-            let newCard = document.createElement("div");
-            newCard.innerHTML = event.dataTransfer.getData("text");
-            let cardElement = newCard.firstChild;
-
-            if (existingCards.length === 1) {
-                let choice = confirm("上に配置しますか？（キャンセルで下に配置）");
-                if (choice) {
-                    // 上に配置 → 既存のカードを下にずらす
-                    existingCards[0].classList.remove("top");
-                    existingCards[0].classList.add("bottom");
-                    cardElement.classList.add("top");
-                } else {
-                    // 下に配置
-                    cardElement.classList.add("bottom");
-                }
-            } else {
-                cardElement.classList.add("top");
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById("deck").appendChild(createCard(i));
             }
-
-            slot.appendChild(cardElement);
-        }
+        });
     </script>
 
 </body>
