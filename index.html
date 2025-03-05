@@ -42,7 +42,10 @@
             align-items: center;
             justify-content: center;
             cursor: grab;
-            position: absolute; /* カードを重ねる */
+            position: absolute; /* フィールド・EXエリアで重ねるために absolute に */
+        }
+        .hand .card {
+            position: static; /* 手札のカードは横並び */
         }
         .drag-over {
             background-color: rgba(0, 255, 0, 0.2);
@@ -80,7 +83,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             const areas = document.querySelectorAll(".area, .hand");
 
-            // ドラッグ＆ドロップイベントの設定
             areas.forEach(area => {
                 area.addEventListener("dragover", (e) => {
                     e.preventDefault();
@@ -98,7 +100,7 @@
                     const cardId = e.dataTransfer.getData("text/plain");
                     const card = document.getElementById(cardId);
 
-                    // 手札なら横並びで追加
+                    // 手札なら横並びのまま追加
                     if (area.id === "hand") {
                         area.appendChild(card);
                         return;
@@ -113,19 +115,20 @@
                     // カードをエリア内に重ねて配置
                     card.style.position = "absolute";
                     card.style.left = "0";
-                    card.style.top = "0";
-                    card.style.zIndex = area.children.length; // 新しいカードが上に来る
+                    card.style.zIndex = area.children.length;
 
-                    // フィールド・EXエリアのみ「上/下の選択」を実行
                     if (area.classList.contains("field") && area.children.length === 2) {
                         const position = confirm("上に置きますか？（OK:上 / キャンセル:下）");
                         if (position) {
                             area.insertBefore(card, area.firstChild);
+                            card.style.top = "0px"; // 上のカードはそのまま
                         } else {
                             area.appendChild(card);
+                            card.style.top = "20px"; // 下のカードを少しズラす
                         }
                     } else {
                         area.appendChild(card);
+                        card.style.top = "0px";
                     }
                 });
             });
