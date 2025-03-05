@@ -87,7 +87,13 @@
             let newCard = document.createElement("div");
             newCard.innerHTML = event.dataTransfer.getData("text");
             let cardElement = newCard.firstChild;
-            cardElement.classList.add(existingCards.length === 0 ? "top" : "bottom");
+
+            if (existingCards.length === 1) {
+                let choice = confirm("上に配置しますか？（キャンセルで下に配置）");
+                cardElement.classList.add(choice ? "top" : "bottom");
+            } else {
+                cardElement.classList.add("top");
+            }
 
             slot.appendChild(cardElement);
         }
